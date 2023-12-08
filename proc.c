@@ -581,7 +581,7 @@ void inicializaLista(Lista l)
 void inserta(Lista * lista,int pid, int prio, int idEntrada)
 {
     
-    if(encontrarPid(*lista,pid) == -1)
+    //if(encontrarPid(*lista,pid) == -1)
     {
         if(lista->primero == -1)
         {

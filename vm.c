@@ -326,11 +326,39 @@ copyuvm(pde_t *pgdir, uint sz)
   for(i = 0; i < sz; i += PGSIZE){
     if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
       panic("copyuvm: pte should exist");
+    int contador_paginasNU = 0;
+    /*if(!(*pte & PTE_U) && *pte != 0)
+    {
+      pte_t * pstack = pte + PGSIZE;
+      if(!(*pte & PTE_P) || !(*pstack & PTE_P))
+      {
+        panic("copyuvm: page not present");
+      }
+    }*/
     /*if(!(*pte & PTE_P))
     {
 
       panic("copyuvm: page not present");
     }*/
+    if(!(*pte & PTE_U))
+    {
+      // pagina de guarda
+      if(contador_paginasNU == 0)
+      {
+        contador_paginasNU = 1;
+      }else{
+        contador_paginasNU = 2;
+      }
+    }
+    else{ 
+      if(!(*pte & PTE_P) && contador_paginasNU != 2)
+      {
+        panic("copyuvm: page not present");
+      }
+      else if(!(*pte & PTE_P) && contador_paginasNU == 2){
+        continue;
+      }
+    }
       
     pa = PTE_ADDR(*pte);
     flags = PTE_FLAGS(*pte);

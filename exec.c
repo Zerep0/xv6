@@ -67,6 +67,8 @@ exec(char *path, char **argv)
     goto bad;
   clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
   sp = sz;
+  curproc->paginaGuarda = (char*)(sz - 2*PGSIZE);
+  curproc->limitePila = sz;
 
   // Push argument strings, prepare rest of stack in ustack.
   for(argc = 0; argv[argc]; argc++) {
