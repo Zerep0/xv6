@@ -53,8 +53,8 @@ struct proc {
   int siguiente;               // Store the next process in the priority list
   int prio;                    // Store the priority of process
   int nProceso;
-  pde_t * paginaGuarda;
-  pde_t * limitePila;
+  uint paginaGuarda;
+  uint limitePila;
 };
 
 // Process memory is laid out contiguously, low addresses first:
