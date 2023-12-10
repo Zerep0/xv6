@@ -11,10 +11,7 @@ int main(int argc, char * argv[]){
         exit(EXIT_SUCCESS);
     }
 
-    printf(1,"%d/%d/%d %d:%d:%d\n",r.day,r.month,r.year,r.hour,r.minute,r.second);
-    int a = 0;
-    int b = 0;
-    printf(1,"%d",a/b);
+
     exit(EXIT_SUCCESS);
     
 }

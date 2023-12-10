@@ -273,7 +273,7 @@ exit(int exit_status)
   {
     exit_status = curproc->tf->trapno + 1;
   }
-  curproc->exit_status = exit_status;
+  curproc->exit_status = exit_status << 8;
   
    // Parent might be sleeping in wait().
   wakeup1(curproc->parent);

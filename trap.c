@@ -85,37 +85,44 @@ void trap(struct trapframe *tf)
     
 // TODO: COMPROBAR MEDIDDAS DE SEGURIDAD
   case T_PGFLT:
+    uint paginaError = PGROUNDDOWN(rcr2());
+
     if (myproc() == 0)
     {
       cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
               tf->trapno, cpuid(), tf->eip, rcr2());
       panic("trap");
     }
-
-    if (rcr2() >= KERNBASE || rcr2() + PGSIZE > KERNBASE)
+    else if (rcr2() >= KERNBASE || rcr2() + PGSIZE > KERNBASE)
     {
       cprintf("T_PGFLT accessed a kernel page\n");
       myproc()->killed = 1;
     }
-    char *mem;
-    mem = kalloc();
-    if (mem == 0)
+    else if(paginaError < myproc()->limitePila)
     {
-      cprintf("T_PGFLT out of memory\n");
-      myproc()->killed = 1;
-    }
-    else
-    {
-      memset(mem, 0, PGSIZE);
-      // groundow se queda solo con el comienzo de la pagina
-      if (mappages(myproc()->pgdir, (char *)PGROUNDDOWN(rcr2()), PGSIZE, V2P(mem), PTE_W | PTE_U) < 0)
+      if(paginaError == myproc()->paginaGuarda)
       {
-        cprintf("T_PGFLT mapping failed\n");
-        kfree(mem);
+        cprintf("Illegal access to the guard page. StackoverFlow\n");
+      }
+      myproc()->killed = 1;
+    }else{
+      char *mem;
+      if((mem = kalloc()) == 0){ 
+        cprintf("T_PGFLT out of memory\n");
         myproc()->killed = 1;
       }
+      else
+      {
+        memset(mem, 0, PGSIZE);
+        // groundow se queda solo con el comienzo de la pagina
+        if (mappages(myproc()->pgdir, (char *)PGROUNDDOWN(rcr2()), PGSIZE, V2P(mem), PTE_W | PTE_U) < 0)
+        {
+          cprintf("T_PGFLT mapping failed\n");
+          kfree(mem);
+          myproc()->killed = 1;
+        }
+      }
     }
-
     break;
 
   // PAGEBREAK: 13

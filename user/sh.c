@@ -192,11 +192,11 @@ int main(void)
 
       if(WIFEXITED(status))
       {
-        printf(1, "Output code: %d\n", WEXITSTATUS(status));
+        printf(1, "Output code valid: %d\n", WEXITSTATUS(status));
       }
       else if(WIFSIGNALED(status))
       {
-        printf(1, "Output code: %d\n", WEXITTRAP(status));
+        printf(1, "Output code invalid: %d\n", WEXITTRAP(status));
       }
         
       
