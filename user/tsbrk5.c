@@ -38,10 +38,10 @@ main(int argc, char *argv[])
   test1();
 
   // Guarda
-  test2();
+  //test2();
 
   // Núcleo
-  test3();
+  //test3();
 
   exit (0);
 }

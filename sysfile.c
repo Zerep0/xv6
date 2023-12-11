@@ -72,6 +72,7 @@ int sys_dup2(void)
   // dup2(descriptor copiar, desscriptor viejo)
   struct file *oldfile, *newfile;
   int oldfd, newfd;
+  
 
   if(argfd(0, &oldfd, &oldfile) < 0)
   {
