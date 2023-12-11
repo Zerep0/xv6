@@ -607,6 +607,24 @@ void inserta(int prio)
     }
 }
 
+void insertaPorPid(unsigned int prio, int pid)
+{
+    if (encontrarPid(ptable.prio[prio], pid) != -1)
+    {
+        if (ptable.prio[prio].primero == -1)
+        {
+            ptable.prio[prio].primero = pid;
+            ptable.prio[prio].ultimo = pid;
+        }
+        else
+        {
+            ptable.proc[ptable.prio[prio].ultimo].siguiente = pid;
+            ptable.prio[prio].ultimo = pid;
+            ptable.proc[ptable.prio[prio].ultimo].siguiente = -1;
+        }
+    }
+}
+
 // elimina el primer elemento al que apunta
 void elimina(int prio)
 {
@@ -626,23 +644,51 @@ void elimina(int prio)
     }
 }
 
-
-
-void setprio(int pid, int prio)
+void eliminaPorPid(int prio, int pid)
 {
-  
+    int indiceEliminado = ptable.prio[prio].primero;
+    if (ptable.prio[prio].primero != -1)
+    {
+        if (ptable.proc[ptable.prio[prio].primero].siguiente == -1 && ptable.proc[ptable.prio[prio].primero].pid == pid)
+        {
+            ptable.prio[prio].primero = -1;
+            ptable.prio[prio].ultimo = -1;
+        }
+        else if(ptable.proc[ptable.prio[prio].primero].pid == pid)
+        {
+            ptable.prio[prio].primero = ptable.proc[ptable.prio[prio].primero].siguiente;
+            
+        }
+
+        ptable.proc[indiceEliminado].siguiente = -1;
+    }
 }
 
-int getprio()
+int setprio(int pid, unsigned int prio)
+{
+    struct proc* p;
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    {
+        if (p->pid == pid)
+        {
+            struct proc aux;
+            aux = p;
+            aux.prio = prio;
+            insertaPorPid(aux.prio, aux.pid);
+            eliminaPorPid(p->prio, p->pid);
+            return 0;
+        }
+    }
+    return -1;
+
+}
+
+int getprio(int pid)
 {
   for(int i = 0; i < NPRIO; i++)
   {
-    if(encontrarPid(ptable.prio[i],myproc()->pid))
+    if(encontrarPid(ptable.prio[i],pid))
       return i;
   }
   return -1;
 }
-
-
-
-
