@@ -7,9 +7,7 @@
 #include "proc.h"
 #include "spinlock.h"
 
-typedef struct{
-    int primero, ultimo;
-}Lista;
+
 
 struct {
   struct spinlock lock;
@@ -577,40 +575,74 @@ void inicializaLista(Lista l)
   l.ultimo = -1;
 }
 
-// inserta al final de la lista
-void inserta(Lista * lista,int pid, int prio, int idEntrada)
+int encontrarPid(Lista l, int pid)
 {
-    
-    //if(encontrarPid(*lista,pid) == -1)
+  int i = l.primero;
+  if(i == -1 || i == pid)
+    return -1;
+  while(ptable.proc[i].siguiente != -1)
+  {
+    if(ptable.proc[i].siguiente == pid)
+      return -1;
+    i = ptable.proc[i].siguiente;
+  }
+  return 0;
+}
+
+// inserta al final de la lista
+void inserta(int prio)
+{
+    if(encontrarPid(ptable.prio[prio],myproc()->pid) != -1)
     {
-        if(lista->primero == -1)
+        if(ptable.prio[prio].primero == -1)
         {
-            lista->primero = idEntrada;
-            lista->ultimo = idEntrada;
+            ptable.prio[prio].primero = myproc()->pid;
+            ptable.prio[prio].ultimo = myproc()->pid;
         }else
         {
-            ptable.proc[lista->ultimo].siguiente = idEntrada;
-            lista->ultimo = idEntrada;
-            ptable.proc[lista->ultimo].siguiente = -1;
+            ptable.proc[ptable.prio[prio].ultimo].siguiente = myproc()->pid;
+            ptable.prio[prio].ultimo = myproc()->pid;
+            ptable.proc[ptable.prio[prio].ultimo].siguiente = -1;
         }  
     }
 }
 
-// elimina dado una lista el primer elemento al que apunta
-void elimina(Lista * lista)
+// elimina el primer elemento al que apunta
+void elimina(int prio)
 {
-    int indiceEliminado = lista->primero;
-    if(lista->primero != -1)
+    int indiceEliminado = ptable.prio[prio].primero;
+    if(ptable.prio[prio].primero != -1)
     {
-      if(ptable.proc[lista->primero].siguiente == -1)
+      if(ptable.proc[ptable.prio[prio].primero].siguiente == -1)
       {
-        lista->primero = -1;
-        lista->ultimo = -1;
+        ptable.prio[prio].primero = -1;
+        ptable.prio[prio].ultimo = -1;
       }else
       {
-        lista->primero = ptable.proc[lista->primero].siguiente;
+        ptable.prio[prio].primero = ptable.proc[ptable.prio[prio].primero].siguiente;
       }
       
       ptable.proc[indiceEliminado].siguiente = -1;
     }
 }
+
+
+
+void setprio(int pid, int prio)
+{
+  
+}
+
+int getprio()
+{
+  for(int i = 0; i < NPRIO; i++)
+  {
+    if(encontrarPid(ptable.prio[i],myproc()->pid))
+      return i;
+  }
+  return -1;
+}
+
+
+
+

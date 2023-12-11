@@ -4,33 +4,8 @@
 
 
 
-void inserta(Lista * lista,int pid, int prio, int idEntrada)
-{
-    
-    if(encontrarPid(*lista,pid) == -1)
-    {
-        if(lista->primero == -1)
-        {
-            lista->primero = idEntrada;
-            lista->ultimo = idEntrada;
-        }else
-        {
-            
-            lista->ultimo = idEntrada;
-        }  
-    }
-}
+
 /*
-void elimina(Lista l)
-{
-    if(l->numeroElementos > 0)
-    {
-        Nodo elimina = l->primero;
-        l->primero = elimina->sig;
-        free(elimina);
-        l->numeroElementos--;
-    }
-}
 
 
 

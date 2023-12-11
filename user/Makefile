@@ -16,6 +16,7 @@ UPROGS=\
 	wc\
 	zombie\
 	dup2test\
+	tsbrk1\
 
 # Try to infer the correct TOOLPREFIX if not set
 ifndef TOOLPREFIX

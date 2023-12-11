@@ -63,12 +63,12 @@ sys_sbrk(void)
   if(argint(0, &n) < 0)
     return -1;
   addr = myproc()->sz;
-  myproc()->sz += n;
   // El caso de un argumento negativo al llamarse a sbrk()
   if(n < 0)
   {
     growproc(n);
-  }
+  } else myproc()->sz += n;
+  
   /*if(growproc(n) < 0)
     return -1;*/
   return addr;
@@ -119,3 +119,4 @@ int sys_date(void)
    cmostime((struct rtcdate*) date_struct);
    return 0;
 }
+

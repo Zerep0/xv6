@@ -106,6 +106,10 @@ int             pipewrite(struct pipe*, char*, int);
 
 //PAGEBREAK: 16
 // proc.c
+typedef struct{
+    int primero, ultimo;
+}Lista;
+
 int             cpuid(void);
 void            exit(int exit_status);
 int             fork(void);
@@ -123,6 +127,11 @@ void            userinit(void);
 int             wait(int * status);
 void            wakeup(void*);
 void            yield(void);
+void            inicializaLista(Lista l);
+void            inserta(int prio);
+void            elimina();
+int             getPrioridad(Lista l, int pid);
+void            setPrioridad(Lista l, int pid, int prio);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
