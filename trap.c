@@ -105,7 +105,13 @@ void trap(struct trapframe *tf)
         cprintf("Illegal access to the guard page. StackoverFlow\n");
       }
       myproc()->killed = 1;
-    }else{
+    }
+    else if(paginaError >= myproc()->sz)
+    {
+      cprintf("Illegal access to Heap\n");
+      myproc()->killed = 1;
+    }
+    else{
       char *mem;
       if((mem = kalloc()) == 0){ 
         cprintf("T_PGFLT out of memory\n");

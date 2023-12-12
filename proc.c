@@ -269,9 +269,9 @@ exit(int exit_status)
   // poner en el pcb el estado del proceso actual
   if(curproc->killed == 1)
   {
-    exit_status = curproc->tf->trapno + 1;
+    curproc->exit_status = curproc->tf->trapno + 1;
   }
-  curproc->exit_status = exit_status << 8;
+  else curproc->exit_status = exit_status << 8;
   
    // Parent might be sleeping in wait().
   wakeup1(curproc->parent);
@@ -592,19 +592,21 @@ int encontrarPid(Lista l, int pid)
 // inserta al final de la lista
 void inserta(int prio)
 {
-    if(encontrarPid(ptable.prio[prio],myproc()->pid) != -1)
-    {
-        if(ptable.prio[prio].primero == -1)
-        {
-            ptable.prio[prio].primero = myproc()->pid;
-            ptable.prio[prio].ultimo = myproc()->pid;
-        }else
-        {
-            ptable.proc[ptable.prio[prio].ultimo].siguiente = myproc()->pid;
-            ptable.prio[prio].ultimo = myproc()->pid;
-            ptable.proc[ptable.prio[prio].ultimo].siguiente = -1;
-        }  
-    }
+  acquire(&ptable.lock);
+  if(encontrarPid(ptable.prio[prio],myproc()->pid) != -1)
+  {
+      if(ptable.prio[prio].primero == -1)
+      {
+        ptable.prio[prio].primero = myproc()->pid;
+        ptable.prio[prio].ultimo = myproc()->pid;
+      }else
+      {
+        ptable.proc[ptable.prio[prio].ultimo].siguiente = myproc()->pid;
+        ptable.prio[prio].ultimo = myproc()->pid;
+        ptable.proc[ptable.prio[prio].ultimo].siguiente = -1;
+      }  
+  }
+  release(&ptable.lock);
 }
 
 void insertaPorPid(unsigned int prio, int pid)
@@ -628,20 +630,22 @@ void insertaPorPid(unsigned int prio, int pid)
 // elimina el primer elemento al que apunta
 void elimina(int prio)
 {
-    int indiceEliminado = ptable.prio[prio].primero;
-    if(ptable.prio[prio].primero != -1)
+  acquire(&ptable.lock);
+  int indiceEliminado = ptable.prio[prio].primero;
+  if(ptable.prio[prio].primero != -1)
+  {
+    if(ptable.proc[ptable.prio[prio].primero].siguiente == -1)
     {
-      if(ptable.proc[ptable.prio[prio].primero].siguiente == -1)
-      {
-        ptable.prio[prio].primero = -1;
-        ptable.prio[prio].ultimo = -1;
-      }else
-      {
-        ptable.prio[prio].primero = ptable.proc[ptable.prio[prio].primero].siguiente;
-      }
-      
-      ptable.proc[indiceEliminado].siguiente = -1;
+      ptable.prio[prio].primero = -1;
+      ptable.prio[prio].ultimo = -1;
+    }else
+    {
+      ptable.prio[prio].primero = ptable.proc[ptable.prio[prio].primero].siguiente;
     }
+    
+    ptable.proc[indiceEliminado].siguiente = -1;
+  }
+  release(&ptable.lock);
 }
 
 void eliminaPorPid(int prio, int pid)
@@ -666,17 +670,17 @@ void eliminaPorPid(int prio, int pid)
 
 int setprio(int pid, unsigned int prio)
 {
-    struct proc* p;
+    struct proc * p = NULL;
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
-        if (p->pid == pid)
+        if (p->pid == pid && p->state == RUNNING )
         {
-            struct proc aux;
-            aux = p;
-            aux.prio = prio;
-            insertaPorPid(aux.prio, aux.pid);
-            eliminaPorPid(p->prio, p->pid);
-            return 0;
+          /*struct proc aux;
+          aux = p;
+          aux.prio = prio;
+          insertaPorPid(aux.prio, aux.pid);
+          eliminaPorPid(p->prio, p->pid);
+          return 0;*/
         }
     }
     return -1;
@@ -687,7 +691,7 @@ int getprio(int pid)
 {
   for(int i = 0; i < NPRIO; i++)
   {
-    if(encontrarPid(ptable.prio[i],pid))
+    if(encontrarPid(ptable.prio[i],pid) == -1)
       return i;
   }
   return -1;

@@ -60,6 +60,7 @@
     "stdio.h": "c",
     "defs.h": "c",
     "mmu.h": "c",
-    "memlayout.h": "c"
+    "memlayout.h": "c",
+    "proc.h": "c"
   }
 }
