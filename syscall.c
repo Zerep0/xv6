@@ -105,6 +105,8 @@ extern int sys_write(void);
 extern int sys_uptime(void);
 extern int sys_date(void);
 extern int sys_dup2(void);
+extern int sys_getprio(void);
+extern void sys_setprio(void);
 
 // Array de punteros a funciones que no reciben nada y devuelven un entero
 static int (*syscalls[])(void) = {
@@ -131,6 +133,8 @@ static int (*syscalls[])(void) = {
 [SYS_close]   sys_close,
 [SYS_date]    sys_date,
 [SYS_dup2]    sys_dup2,
+[SYS_getprio] sys_getprio,
+[SYS_setprio] sys_setprio
 };
 
 void

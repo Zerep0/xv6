@@ -61,6 +61,10 @@
     "defs.h": "c",
     "mmu.h": "c",
     "memlayout.h": "c",
-    "proc.h": "c"
+    "proc.h": "c",
+    "param.h": "c",
+    "date.h": "c",
+    "types.h": "c",
+    "x86.h": "c"
   }
 }

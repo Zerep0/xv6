@@ -648,51 +648,59 @@ void elimina(int prio)
   release(&ptable.lock);
 }
 
-void eliminaPorPid(int prio, int pid)
+int eliminaPorPid(int prio, int pid)
 {
     int indiceEliminado = ptable.prio[prio].primero;
-    if (ptable.prio[prio].primero != -1)
+    if(indiceEliminado == -1)
+        return -1;
+    else if(indiceEliminado == pid)
     {
-        if (ptable.proc[ptable.prio[prio].primero].siguiente == -1 && ptable.proc[ptable.prio[prio].primero].pid == pid)
+      elimina(prio);
+      return 0;
+    }
+    else
+    {
+      int i = ptable.prio[prio].primero;
+      while (ptable.proc[i].siguiente != -1)
+      {
+        if(ptable.proc[ptable.proc[i].siguiente].pid == pid)
         {
-            ptable.prio[prio].primero = -1;
-            ptable.prio[prio].ultimo = -1;
+          // aplicar eliminacion
         }
-        else if(ptable.proc[ptable.prio[prio].primero].pid == pid)
-        {
-            ptable.prio[prio].primero = ptable.proc[ptable.prio[prio].primero].siguiente;
-            
-        }
-
-        ptable.proc[indiceEliminado].siguiente = -1;
+      }
     }
 }
 
 int setprio(int pid, unsigned int prio)
 {
+    acquire(&ptable.lock);
     struct proc * p = NULL;
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
-        if (p->pid == pid && p->state == RUNNING )
+        if (p->pid == pid && p->state == RUNNING)
         {
-          /*struct proc aux;
+          struct proc * aux;
           aux = p;
-          aux.prio = prio;
-          insertaPorPid(aux.prio, aux.pid);
+          aux->prio = prio;
           eliminaPorPid(p->prio, p->pid);
-          return 0;*/
+          p->prio = prio;
+          insertaPorPid(p->prio, p->pid);
+          return 0;
         }
     }
+    release(&ptable.lock);
     return -1;
 
 }
 
 int getprio(int pid)
 {
+  acquire(&ptable.lock);
   for(int i = 0; i < NPRIO; i++)
   {
     if(encontrarPid(ptable.prio[i],pid) == -1)
       return i;
   }
+  release(&ptable.lock);
   return -1;
 }

@@ -120,4 +120,8 @@ int sys_date(void)
    return 0;
 }
 
+int setprio(void)
+{
+  return -2;
+}
 
