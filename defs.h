@@ -128,10 +128,10 @@ int             wait(int * status);
 void            wakeup(void*);
 void            yield(void);
 void            inicializaLista(Lista l);
-void            inserta(int prio);
+void            inserta(int prio, int pid);
 void            elimina();
-int             getPrioridad(Lista l, int pid);
-void            setPrioridad(Lista l, int pid, int prio);
+int             getprio(int pid);
+int             setprio(int pid, unsigned int prio);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

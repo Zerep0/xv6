@@ -120,8 +120,19 @@ int sys_date(void)
    return 0;
 }
 
-int setprio(void)
+int sys_getprio(void)
 {
-  return -2;
+  int pid;
+  //comprobar argumentos
+  getprio(pid);
 }
+
+int sys_setprio(void)
+{
+  int pid, prio;
+  //comprobar argumentos
+  setprio(pid,prio);
+}
+
+
 

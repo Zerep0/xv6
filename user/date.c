@@ -10,7 +10,7 @@ int main(int argc, char * argv[]){
         printf(2, "date failed\n");
         exit(EXIT_SUCCESS);
     }
-
+    
 
     exit(EXIT_SUCCESS);
     

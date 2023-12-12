@@ -590,42 +590,25 @@ int encontrarPid(Lista l, int pid)
 }
 
 // inserta al final de la lista
-void inserta(int prio)
+void inserta(int prio, int pid)
 {
   acquire(&ptable.lock);
-  if(encontrarPid(ptable.prio[prio],myproc()->pid) != -1)
+  if(encontrarPid(ptable.prio[prio],pid) != -1)
   {
       if(ptable.prio[prio].primero == -1)
       {
-        ptable.prio[prio].primero = myproc()->pid;
-        ptable.prio[prio].ultimo = myproc()->pid;
+        ptable.prio[prio].primero = pid;
+        ptable.prio[prio].ultimo = pid;
       }else
       {
-        ptable.proc[ptable.prio[prio].ultimo].siguiente = myproc()->pid;
-        ptable.prio[prio].ultimo = myproc()->pid;
+        ptable.proc[ptable.prio[prio].ultimo].siguiente = pid;
+        ptable.prio[prio].ultimo = pid;
         ptable.proc[ptable.prio[prio].ultimo].siguiente = -1;
       }  
   }
   release(&ptable.lock);
 }
 
-void insertaPorPid(unsigned int prio, int pid)
-{
-    if (encontrarPid(ptable.prio[prio], pid) != -1)
-    {
-        if (ptable.prio[prio].primero == -1)
-        {
-            ptable.prio[prio].primero = pid;
-            ptable.prio[prio].ultimo = pid;
-        }
-        else
-        {
-            ptable.proc[ptable.prio[prio].ultimo].siguiente = pid;
-            ptable.prio[prio].ultimo = pid;
-            ptable.proc[ptable.prio[prio].ultimo].siguiente = -1;
-        }
-    }
-}
 
 // elimina el primer elemento al que apunta
 void elimina(int prio)
@@ -665,10 +648,12 @@ int eliminaPorPid(int prio, int pid)
       {
         if(ptable.proc[ptable.proc[i].siguiente].pid == pid)
         {
-          // aplicar eliminacion
+          ptable.proc[i].siguiente = ptable.proc[ptable.proc[i].siguiente].siguiente;
+          return 0;
         }
       }
     }
+    return -1;
 }
 
 int setprio(int pid, unsigned int prio)
@@ -677,14 +662,16 @@ int setprio(int pid, unsigned int prio)
     struct proc * p = NULL;
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
-        if (p->pid == pid && p->state == RUNNING)
+        if (p->pid == pid)
         {
-          struct proc * aux;
-          aux = p;
-          aux->prio = prio;
-          eliminaPorPid(p->prio, p->pid);
-          p->prio = prio;
-          insertaPorPid(p->prio, p->pid);
+          if(p->state == RUNNABLE)
+          {
+            eliminaPorPid(p->prio, p->pid);
+            p->prio = prio;
+            inserta(p->prio, p->pid);
+          }else{
+            p->prio = prio;
+          }
           return 0;
         }
     }
