@@ -123,14 +123,30 @@ int sys_date(void)
 int sys_getprio(void)
 {
   int pid;
-  //comprobar argumentos
+
+  if(argint(0, &pid) < 0)
+    return -1;
+
+  //comprobar argumento
+  if(pid < 0 || pid > MAX_PID)
+    return -1;
+
   getprio(pid);
 }
 
 int sys_setprio(void)
 {
   int pid, prio;
+
+  if(argint(0, &pid) < 0)
+    return -1;
+  if(argint(1, &prio) < 0)
+    return -1;
+
   //comprobar argumentos
+  if(pid < FIRST_PID || pid > MAX_PID || prio < HIGH_PRIO || prio > LOW_PRIO)
+    return -1;
+    
   setprio(pid,prio);
 }
 

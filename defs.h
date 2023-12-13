@@ -12,6 +12,10 @@ struct superblock;
 
 #define PRIORIDAD_DEFECTO 5
 #define NPRIO 10
+#define MAX_PID 2147483647
+#define LOW_PRIO 9
+#define HIGH_PRIO 0
+#define FIRST_PID 0
 
 // bio.c
 void            binit(void);
@@ -127,7 +131,7 @@ void            userinit(void);
 int             wait(int * status);
 void            wakeup(void*);
 void            yield(void);
-void            inicializaLista(Lista l);
+void            inicializaLista(int prio);
 void            inserta(int prio, int pid);
 void            elimina();
 int             getprio(int pid);

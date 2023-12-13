@@ -31,11 +31,11 @@ pinit(void)
   for(int i = 0; i < NPROC; i++)
   {
     ptable.proc[i].nProceso = i;
-  }/*
+  }
   for(int i = 0; i < NPRIO; i++)
   {
-    crea(ptable.prio[i])
-  }*/
+    inicializa(ptable.prio[i]);
+  }
   
 }
 
@@ -101,7 +101,7 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  cprintf("\nNproceso: %d, NombreProceso: %s\n", p->nProceso, p->name);
+  
 
   release(&ptable.lock);
 
@@ -569,20 +569,20 @@ procdump(void)
 //-----------------METODOS LISTA-----------------------
 
 // pone anulo (-1) el primero de la lista y el ultimo
-void inicializaLista(Lista l)
+void inicializaLista(int prio)
 {
-  l.primero = -1;
-  l.ultimo = -1;
+  ptable.prio[prio].primero = -1;
+  ptable.prio[prio].ultimo = -1;
 }
 
 int encontrarPid(Lista l, int pid)
 {
   int i = l.primero;
-  if(i == -1 || i == pid)
+  if(i == -1 || ptable.proc[i].pid == pid)
     return -1;
   while(ptable.proc[i].siguiente != -1)
   {
-    if(ptable.proc[i].siguiente == pid)
+    if(ptable.proc[ptable.proc[i].siguiente].pid == pid)
       return -1;
     i = ptable.proc[i].siguiente;
   }
@@ -590,19 +590,19 @@ int encontrarPid(Lista l, int pid)
 }
 
 // inserta al final de la lista
-void inserta(int prio, int pid)
+void inserta(int prio)
 {
   acquire(&ptable.lock);
-  if(encontrarPid(ptable.prio[prio],pid) != -1)
+  if(encontrarPid(ptable.prio[prio],myproc()->pid) != -1)
   {
       if(ptable.prio[prio].primero == -1)
       {
-        ptable.prio[prio].primero = pid;
-        ptable.prio[prio].ultimo = pid;
+        ptable.prio[prio].primero = myproc()->nProceso;
+        ptable.prio[prio].ultimo = myproc()->nProceso;
       }else
       {
-        ptable.proc[ptable.prio[prio].ultimo].siguiente = pid;
-        ptable.prio[prio].ultimo = pid;
+        ptable.proc[ptable.prio[prio].ultimo].siguiente = myproc()->nProceso;
+        ptable.prio[prio].ultimo = myproc()->nProceso;
         ptable.proc[ptable.prio[prio].ultimo].siguiente = -1;
       }  
   }
