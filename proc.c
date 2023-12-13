@@ -34,7 +34,7 @@ pinit(void)
   }
   for(int i = 0; i < NPRIO; i++)
   {
-    inicializa(ptable.prio[i]);
+    inicializaLista(i);
   }
   
 }
@@ -163,7 +163,7 @@ userinit(void)
   acquire(&ptable.lock);
 
   p->state = RUNNABLE;
-  
+  inserta(NORM_PRIO,p->nProceso);
 
   release(&ptable.lock);
 }
@@ -230,6 +230,7 @@ fork(void)
   acquire(&ptable.lock);
 
   np->state = RUNNABLE;
+  inserta(NORM_PRIO,np->nProceso);
 
   release(&ptable.lock);
 
@@ -373,6 +374,7 @@ scheduler(void)
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
+      elimina(p->prio);
       
 
       swtch(&(c->scheduler), p->context);
@@ -493,7 +495,11 @@ wakeup1(void *chan)
 
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == SLEEPING && p->chan == chan)
+    {
       p->state = RUNNABLE;
+      inserta(p->prio,p->nProceso);
+    }
+      
 }
 
 // Wake up all processes sleeping on chan.
@@ -519,7 +525,11 @@ kill(int pid)
       p->killed = 1;
       // Wake process from sleep if necessary.
       if(p->state == SLEEPING)
+      {
         p->state = RUNNABLE;
+        inserta(p->prio,p->nProceso);
+      }
+        
       release(&ptable.lock);
       return 0;
     }
@@ -575,119 +585,105 @@ void inicializaLista(int prio)
   ptable.prio[prio].ultimo = -1;
 }
 
-int encontrarPid(Lista l, int pid)
+// modificar valor retorno
+int encontrarPid(int pid)
 {
-  int i = l.primero;
-  if(i == -1 || ptable.proc[i].pid == pid)
-    return -1;
-  while(ptable.proc[i].siguiente != -1)
+  int i = 0;
+  while(i < NPROC && ptable.proc[i].pid != pid)
   {
-    if(ptable.proc[ptable.proc[i].siguiente].pid == pid)
-      return -1;
-    i = ptable.proc[i].siguiente;
+    i++;
   }
-  return 0;
+  if(i == NPROC)
+    return -1;
+  return i;
 }
 
 // inserta al final de la lista
-void inserta(int prio)
+void inserta(int prio, int indice)
 {
-  acquire(&ptable.lock);
-  if(encontrarPid(ptable.prio[prio],myproc()->pid) != -1)
-  {
       if(ptable.prio[prio].primero == -1)
       {
-        ptable.prio[prio].primero = myproc()->nProceso;
-        ptable.prio[prio].ultimo = myproc()->nProceso;
+        ptable.prio[prio].primero = indice;
+        ptable.prio[prio].ultimo = indice;
       }else
       {
-        ptable.proc[ptable.prio[prio].ultimo].siguiente = myproc()->nProceso;
-        ptable.prio[prio].ultimo = myproc()->nProceso;
-        ptable.proc[ptable.prio[prio].ultimo].siguiente = -1;
+        ptable.proc[ptable.prio[prio].ultimo].siguiente = indice;
+        ptable.prio[prio].ultimo = indice;
+        ptable.proc[indice].siguiente = -1;
       }  
-  }
-  release(&ptable.lock);
 }
 
 
 // elimina el primer elemento al que apunta
 void elimina(int prio)
 {
-  acquire(&ptable.lock);
   int indiceEliminado = ptable.prio[prio].primero;
-  if(ptable.prio[prio].primero != -1)
+  if(ptable.proc[indiceEliminado].siguiente == -1)
   {
-    if(ptable.proc[ptable.prio[prio].primero].siguiente == -1)
-    {
-      ptable.prio[prio].primero = -1;
-      ptable.prio[prio].ultimo = -1;
-    }else
-    {
-      ptable.prio[prio].primero = ptable.proc[ptable.prio[prio].primero].siguiente;
-    }
-    
-    ptable.proc[indiceEliminado].siguiente = -1;
+    ptable.prio[prio].primero = -1;
+    ptable.prio[prio].ultimo = -1;
+  }else
+  {
+    ptable.prio[prio].primero = ptable.proc[indiceEliminado].siguiente;
   }
-  release(&ptable.lock);
 }
 
-int eliminaPorPid(int prio, int pid)
+int eliminaPorPid(int pid)
 {
-    int indiceEliminado = ptable.prio[prio].primero;
-    if(indiceEliminado == -1)
+    int EntradaprocesoActual = encontrarPid(pid);
+    if(EntradaprocesoActual == -1)
         return -1;
-    else if(indiceEliminado == pid)
+
+    int prio = ptable.proc[EntradaprocesoActual].prio;
+    int indicePrio = ptable.prio[prio].primero;
+    if(ptable.proc[indicePrio].pid == pid)
     {
       elimina(prio);
-      return 0;
+      return 1;
     }
-    else
+    while (ptable.proc[indicePrio].siguiente != EntradaprocesoActual)
     {
-      int i = ptable.prio[prio].primero;
-      while (ptable.proc[i].siguiente != -1)
-      {
-        if(ptable.proc[ptable.proc[i].siguiente].pid == pid)
-        {
-          ptable.proc[i].siguiente = ptable.proc[ptable.proc[i].siguiente].siguiente;
-          return 0;
-        }
-      }
+      indicePrio = ptable.proc[indicePrio].siguiente;
     }
-    return -1;
+    ptable.proc[indicePrio].siguiente = ptable.proc[ptable.proc[indicePrio].siguiente].siguiente;
+    return 1;
 }
 
 int setprio(int pid, unsigned int prio)
 {
     acquire(&ptable.lock);
-    struct proc * p = NULL;
-    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+
+    int indiceProceso = 0;
+    int condicion = 0;
+    while(indiceProceso < NPROC && condicion == 0)
     {
-        if (p->pid == pid)
+      if(ptable.proc[indiceProceso].pid == pid)
+      {
+        if(ptable.proc[indiceProceso].state == RUNNABLE)
         {
-          if(p->state == RUNNABLE)
-          {
-            eliminaPorPid(p->prio, p->pid);
-            p->prio = prio;
-            inserta(p->prio, p->pid);
-          }else{
-            p->prio = prio;
-          }
-          return 0;
+          if(eliminaPorPid(pid) == -1)
+            return condicion;
+          ptable.proc[indiceProceso].prio = prio;
+          inserta(prio, pid);
+        }else{
+          ptable.proc[indiceProceso].prio = prio;
         }
+        condicion = 1;
+      }
+      indiceProceso++;
     }
     release(&ptable.lock);
-    return -1;
+    return condicion;
 
 }
 
 int getprio(int pid)
 {
   acquire(&ptable.lock);
-  for(int i = 0; i < NPRIO; i++)
-  {
-    if(encontrarPid(ptable.prio[i],pid) == -1)
-      return i;
-  }
+  int prioObtenido = -1;;
+  int entradaProcesoActual = encontrarPid(pid);
+  if(entradaProcesoActual != -1)
+    prioObtenido = ptable.proc[entradaProcesoActual].prio;
   release(&ptable.lock);
-  return -1;
+  return prioObtenido;
 }

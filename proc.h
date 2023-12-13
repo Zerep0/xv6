@@ -52,8 +52,8 @@ struct proc {
   int exit_status;             // Store the error exit code
   int siguiente;               // Store the next process in the priority list
   int prio;                    // Store the priority of process
-  int nProceso;
-  uint paginaGuarda;
+  int nProceso;                // indice en la tabla de procesos
+  uint paginaGuarda;           
   uint limitePila;
 };
 

@@ -106,11 +106,11 @@ void trap(struct trapframe *tf)
       }
       myproc()->killed = 1;
     }
-    else if(paginaError >= myproc()->sz)
+    /*else if(paginaError >= myproc()->sz)
     {
       cprintf("Illegal access to Heap\n");
       myproc()->killed = 1;
-    }
+    }*/
     else{
       char *mem;
       if((mem = kalloc()) == 0){ 

@@ -10,11 +10,11 @@ struct sleeplock;
 struct stat;
 struct superblock;
 
-#define PRIORIDAD_DEFECTO 5
+#define NORM_PRIO 5
 #define NPRIO 10
 #define MAX_PID 2147483647
-#define LOW_PRIO 9
-#define HIGH_PRIO 0
+#define LOWEST_PRIO 9
+#define HIGHEST_PRIO 0
 #define FIRST_PID 0
 
 // bio.c
@@ -131,10 +131,10 @@ void            userinit(void);
 int             wait(int * status);
 void            wakeup(void*);
 void            yield(void);
-void            inicializaLista(int prio);
-void            inserta(int prio, int pid);
-void            elimina();
+void            inserta(int prio, int indice);
+void            elimina(int prio);
 int             getprio(int pid);
+void            inicializaLista(int prio);
 int             setprio(int pid, unsigned int prio);
 
 // swtch.S

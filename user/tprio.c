@@ -1,5 +1,8 @@
 #include "types.h"
 #include "user.h"
+#define LOWEST_PRIO 9
+#define HIGHEST_PRIO 0
+#define NORM_PRIO 5
 
 void
 do_calc (char* nombre)
@@ -22,7 +25,7 @@ int
 main(int argc, char *argv[])
 {
   if (fork())
-    exit();
+    exit(EXIT_SUCCESS);
 
   // El proceso se inicia en baja prioridad.
   // Genera otro proceso hijo que a su vez genera dos
@@ -35,7 +38,7 @@ main(int argc, char *argv[])
     else
     {  setprio(getpid(), LOWEST_PRIO); do_calc("+");}
     
-    exit();
+    exit(EXIT_SUCCESS);
   }
 
   if (fork() == 0)
@@ -45,7 +48,7 @@ main(int argc, char *argv[])
     else
     {  setprio(getpid(), LOWEST_PRIO); do_calc("^");}
     
-    exit();
+    exit(EXIT_SUCCESS);
   }
   
   printf(1, "Me voy a dormir 10 segundos para que puedas interactuar con el shell. \
@@ -62,14 +65,14 @@ main(int argc, char *argv[])
     {  
       setprio (getpid(), HIGHEST_PRIO); 
       do_calc("0");
-      exit();
+      exit(EXIT_SUCCESS);
     }
     else
     {  
       setprio (getpid(), HIGHEST_PRIO+1); 
       do_calc("1"); 
-      exit();}
+      exit(EXIT_SUCCESS);}
   }
 
-  exit();
+  exit(EXIT_SUCCESS);
 }

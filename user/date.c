@@ -10,6 +10,7 @@ int main(int argc, char * argv[]){
         printf(2, "date failed\n");
         exit(EXIT_SUCCESS);
     }
+    printf(1,"%d\n",getprio(getpid()));
     
 
     exit(EXIT_SUCCESS);

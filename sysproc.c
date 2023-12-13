@@ -131,7 +131,7 @@ int sys_getprio(void)
   if(pid < 0 || pid > MAX_PID)
     return -1;
 
-  getprio(pid);
+  else return getprio(pid);
 }
 
 int sys_setprio(void)
@@ -144,10 +144,10 @@ int sys_setprio(void)
     return -1;
 
   //comprobar argumentos
-  if(pid < FIRST_PID || pid > MAX_PID || prio < HIGH_PRIO || prio > LOW_PRIO)
+  if(pid < FIRST_PID || pid > MAX_PID || prio < HIGHEST_PRIO || prio > LOWEST_PRIO)
     return -1;
     
-  setprio(pid,prio);
+  return setprio(pid,prio);
 }
 
 
