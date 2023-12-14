@@ -131,6 +131,7 @@ void            userinit(void);
 int             wait(int * status);
 void            wakeup(void*);
 void            yield(void);
+int             encontrarPid(int pid);
 void            inserta(int prio, int indice);
 void            elimina(int prio);
 int             getprio(int pid);

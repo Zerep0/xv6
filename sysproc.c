@@ -146,8 +146,7 @@ int sys_setprio(void)
   //comprobar argumentos
   if(pid < FIRST_PID || pid > MAX_PID || prio < HIGHEST_PRIO || prio > LOWEST_PRIO)
     return -1;
-  
-  cprintf("pid: %d, prio: %d",pid,prio);
+    
   return setprio(pid,prio);
 }
 

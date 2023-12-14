@@ -10,8 +10,10 @@ int main(int argc, char * argv[]){
         printf(2, "date failed\n");
         exit(EXIT_SUCCESS);
     }
-    printf(1,"%d\n",getprio(getpid()));
-    
+    printf(1, "%d/%d/%d - %d:%d:%d\n", r.day, r.month, r.year, r.hour, r.minute, r.second);
+    printf(1, "mi prioridad: %d\n",getprio(getpid()));
+    setprio(getpid(),3);
+    printf(1, "mi prioridad: %d\n",getprio(getpid()));
 
     exit(EXIT_SUCCESS);
     
