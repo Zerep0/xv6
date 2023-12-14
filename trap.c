@@ -51,6 +51,11 @@ void trap(struct trapframe *tf)
 
   switch (tf->trapno)
   {
+  case T_DIVIDE:
+    cprintf("Divide by zero\n");
+    myproc()->killed = 1;
+    break;
+
   case T_IRQ0 + IRQ_TIMER:
     if (cpuid() == 0)
     {
@@ -103,14 +108,17 @@ void trap(struct trapframe *tf)
       if(paginaError == myproc()->paginaGuarda)
       {
         cprintf("Illegal access to the guard page. StackoverFlow\n");
+        myproc()->killed = 1;
       }
-      myproc()->killed = 1;
+      else{
+        panic("T_PGFLT page fault on unexpected page");
+      }
     }
-    /*else if(paginaError >= myproc()->sz)
+    else if(paginaError >= myproc()->sz)
     {
       cprintf("Illegal access to Heap\n");
       myproc()->killed = 1;
-    }*/
+    }
     else{
       char *mem;
       if((mem = kalloc()) == 0){ 

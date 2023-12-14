@@ -208,8 +208,8 @@ fork(void)
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
-  np->prio = curproc->prio;   // hereda prioridad del padre
-
+  np->limitePila = curproc->limitePila;
+  np->paginaGuarda = curproc->paginaGuarda;
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
 
@@ -366,7 +366,7 @@ scheduler(void)
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
       int indiceEntrada = ptable.prio[i].primero;
-      p = &ptable.proc[indiceEntrada];
+      p = &(ptable.proc[indiceEntrada]);
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
@@ -381,7 +381,7 @@ scheduler(void)
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
-      i = 0;
+      i = -1;
     }
     release(&ptable.lock);
 
@@ -604,16 +604,15 @@ void inserta(int prio, int pid)
   int indice = encontrarPid(pid);
   if(ptable.prio[prio].primero == -1)
   {
-    ptable.proc[indice].prio = prio;
     ptable.prio[prio].primero = indice;
-    ptable.prio[prio].ultimo = indice;
-  }else
+  }
+  else
   {
     ptable.proc[ptable.prio[prio].ultimo].siguiente = indice;
-    ptable.prio[prio].ultimo = indice;
-    ptable.proc[indice].siguiente = -1;
-    ptable.proc[indice].prio = prio;
   }  
+  ptable.prio[prio].ultimo = indice;
+  ptable.proc[indice].prio = prio;
+  ptable.proc[indice].siguiente = -1;
 }
 
 
@@ -625,7 +624,6 @@ void elimina(int prio)
   {
     ptable.prio[prio].primero = -1;
     ptable.prio[prio].ultimo = -1;
-    ptable.proc[indiceEliminado].siguiente = -1;
   }else
   {
     ptable.prio[prio].primero = ptable.proc[indiceEliminado].siguiente;
@@ -650,7 +648,10 @@ int eliminaPorPid(int pid)
     {
       indicePrio = ptable.proc[indicePrio].siguiente;
     }
+    
     ptable.proc[indicePrio].siguiente = ptable.proc[ptable.proc[indicePrio].siguiente].siguiente;
+    //ptable.proc[ptable.proc[indicePrio].siguiente].siguiente = -1;
+
     return 1;
 }
 

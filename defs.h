@@ -10,9 +10,10 @@ struct sleeplock;
 struct stat;
 struct superblock;
 
-#define NORM_PRIO 5
+
 #define NPRIO 10
 #define MAX_PID 2147483647
+#define NORM_PRIO 5
 #define LOWEST_PRIO 9
 #define HIGHEST_PRIO 0
 #define FIRST_PID 0

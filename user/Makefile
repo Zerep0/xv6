@@ -15,6 +15,7 @@ UPROGS=\
 	usertests\
 	wc\
 	zombie\
+	exitwait\
 	dup2test\
 	tsbrk1\
 	tsbrk2\
