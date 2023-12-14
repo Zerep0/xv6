@@ -108,6 +108,7 @@ void runcmd(struct cmd *cmd)
     break;
 
   case PIPE:
+    
     pcmd = (struct pipecmd *)cmd;
     if (pipe(p) < 0)
       panic("pipe");

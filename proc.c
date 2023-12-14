@@ -163,7 +163,7 @@ userinit(void)
   acquire(&ptable.lock);
 
   p->state = RUNNABLE;
-  inserta(NORM_PRIO,p->nProceso);
+  inserta(NORM_PRIO,p->nProceso);     //inserta con prioridad normal
 
   release(&ptable.lock);
 }
@@ -214,6 +214,7 @@ fork(void)
   np->sz = curproc->sz;
   np->parent = curproc;
   *np->tf = *curproc->tf;
+  np->prio = curproc->prio;   // hereda prioridad del padre
 
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
@@ -230,7 +231,8 @@ fork(void)
   acquire(&ptable.lock);
 
   np->state = RUNNABLE;
-  inserta(NORM_PRIO,np->nProceso);
+  cprintf("Inserta en lista de priordad %d el proceso de la entrada %d con pid %d\n",curproc->prio,np->nProceso, pid);
+  inserta(curproc->prio,np->nProceso); // insertar con la prioridad del padre
 
   release(&ptable.lock);
 
@@ -364,25 +366,29 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
+    for(int i = 0; i < NPRIO; i++){
+      if(ptable.prio[i].primero == -1)
         continue;
-
       // Switch to chosen process.  It is the process's job
       // to release ptable.lock and then reacquire it
       // before jumping back to us.
+      int indiceEntrada = ptable.prio[i].primero;
+      p = &(ptable.proc[indiceEntrada]);
       c->proc = p;
       switchuvm(p);
       p->state = RUNNING;
       elimina(p->prio);
+      inserta(p->prio,indiceEntrada);
+      
+      
       
 
       swtch(&(c->scheduler), p->context);
       switchkvm();
-
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
+      i = 0;
     }
     release(&ptable.lock);
 
@@ -601,16 +607,18 @@ int encontrarPid(int pid)
 // inserta al final de la lista
 void inserta(int prio, int indice)
 {
-      if(ptable.prio[prio].primero == -1)
-      {
-        ptable.prio[prio].primero = indice;
-        ptable.prio[prio].ultimo = indice;
-      }else
-      {
-        ptable.proc[ptable.prio[prio].ultimo].siguiente = indice;
-        ptable.prio[prio].ultimo = indice;
-        ptable.proc[indice].siguiente = -1;
-      }  
+  if(ptable.prio[prio].primero == -1)
+  {
+    ptable.proc[indice].prio = prio;
+    ptable.prio[prio].primero = indice;
+    ptable.prio[prio].ultimo = indice;
+  }else
+  {
+    ptable.proc[ptable.prio[prio].ultimo].siguiente = indice;
+    ptable.prio[prio].ultimo = indice;
+    ptable.proc[indice].siguiente = -1;
+    ptable.proc[indice].prio = prio;
+  }  
 }
 
 
@@ -664,7 +672,7 @@ int setprio(int pid, unsigned int prio)
           if(eliminaPorPid(pid) == -1)
             return condicion;
           ptable.proc[indiceProceso].prio = prio;
-          inserta(prio, pid);
+          inserta(prio, indiceProceso);
         }else{
           ptable.proc[indiceProceso].prio = prio;
         }
