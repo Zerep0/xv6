@@ -1,9 +1,9 @@
 xv6 realizado en el año 2022-23
 
 INCLUYE:
-**Tratamiento de errores**
-**Comprobación de página de guarda**
-**Asignación de procesos mediante lista enlazada**
+- **Tratamiento de errores**
+- **Comprobación de página de guarda**
+- **Asignación de procesos mediante lista enlazada**
 
 ACKNOWLEDGMENTS
 
